@@ -595,7 +595,7 @@ class Downshift extends Component {
 
     Enter(event) {
       const {isOpen, highlightedIndex} = this.getState()
-      if (isOpen && highlightedIndex != null) {
+      if (isOpen && highlightedIndex != null && this.items[highlightedIndex]) {
         event.preventDefault()
         const item = this.items[highlightedIndex]
         const itemNode = this.getItemNodeFromIndex(highlightedIndex)

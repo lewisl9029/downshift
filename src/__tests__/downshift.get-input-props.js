@@ -385,6 +385,19 @@ test('enter on an input with an open menu does nothing without a highlightedInde
   expect(childrenSpy).not.toHaveBeenCalled()
 })
 
+test.only('enter on an input with an open menu with 0 items calls submit', () => {
+  const {enterOnInput, queryByTestId, submitSpy} = renderDownshift({
+    items: [],
+    props: {isOpen: true, defaultHighlightedIndex: 0},
+  })
+  submitSpy.mockClear()
+  // ENTER
+  enterOnInput()
+  fireEvent.keyUp(queryByTestId('input'), {key: 'Enter'})
+  // onSubmit is called on form
+  expect(submitSpy).toHaveBeenCalledWith([])
+})
+
 test('enter on an input with an open menu and a highlightedIndex selects that item', () => {
   const onChange = jest.fn()
   const isOpen = true
@@ -643,7 +656,9 @@ function setup({items = colors} = {}) {
     ({isOpen, getInputProps, getToggleButtonProps, getItemProps}) => (
       <div>
         <input {...getInputProps({'data-testid': 'input'})} />
-        <button {...getToggleButtonProps({'data-testid': 'button'})} />
+        <button
+          {...getToggleButtonProps({type: 'button', 'data-testid': 'button'})}
+        />
         {isOpen && (
           <div>
             {items.map((item, index) => (
@@ -671,11 +686,17 @@ function setup({items = colors} = {}) {
 
 function renderDownshift({items, props} = {}) {
   const {Component, childrenSpy} = setup({items})
-  const utils = render(<Component {...props} />)
+  const submitSpy = jest.fn(event => event.preventDefault())
+  const utils = render(
+    <form onSubmit={submitSpy}>
+      <Component {...props} />
+    </form>,
+  )
   const input = utils.queryByTestId('input')
   return {
     Component,
     childrenSpy,
+    submitSpy,
     ...utils,
     input,
     button: utils.queryByTestId('button'),
