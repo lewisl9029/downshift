@@ -385,6 +385,36 @@ test('enter on an input with an open menu does nothing without a highlightedInde
   expect(childrenSpy).not.toHaveBeenCalled()
 })
 
+test.skip('enter on an input with an open menu with 0 items calls submit', () => {
+  const submitSpy = jest.fn(event => event.preventDefault())
+
+  const {queryByText, queryByTestId} = render(
+    <form onSubmit={submitSpy}>
+      <Downshift isOpen={true} itemCount={10} defaultHighlightedIndex={0}>
+        {downshift => (
+          <input {...downshift.getInputProps({'data-testid': 'input'})} />
+        )}
+      </Downshift>
+      <button type="submit">submit</button>
+    </form>,
+  )
+
+  const button = queryByText('submit')
+
+  const input = queryByTestId('input')
+
+  // this works
+  // fireEvent.click(button)
+
+  // this doesn't
+  fireEvent.keyDown(input, {key: 'Enter', keyCode: 13})
+  fireEvent.keyUp(input, {key: 'Enter', keyCode: 13})
+  fireEvent.keyPress(input, {key: 'Enter', keyCode: 13})
+
+  // onSubmit is called on form
+  expect(submitSpy).toHaveBeenCalledWith([])
+})
+
 test('enter on an input with an open menu and a highlightedIndex selects that item', () => {
   const onChange = jest.fn()
   const isOpen = true
@@ -577,9 +607,7 @@ test(`getInputProps doesn't include event handlers when disabled is passed (for 
   // eslint-disable-next-line jest/no-if
   if (entry) {
     throw new Error(
-      `getInputProps should not have any props that are callbacks. It has ${
-        entry[0]
-      }.`,
+      `getInputProps should not have any props that are callbacks. It has ${entry[0]}.`,
     )
   }
 })
